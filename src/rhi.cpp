@@ -1,8 +1,17 @@
 #include "rhi.h"
+#include "GLFW/glfw3.h"
 
 void RHI::init()
 {
     volkInitialize();
+
+    uint32_t extCount;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
+    extensions_.resize(extCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extCount, extensions_.data());
+
+    uint32_t glfwExtCount;
+    auto glfwExts = glfwGetRequiredInstanceExtensions(&glfwExtCount);
 
     VkApplicationInfo appInfo = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
