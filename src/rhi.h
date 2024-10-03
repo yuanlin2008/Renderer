@@ -10,4 +10,7 @@ public:
 
 private:
     vkb::Instance _instance;
+    vkb::Device _device;
+    vkb::DispatchTable _deviceFN;
+    VkQueue _graphicQueue;
 };

@@ -50,9 +50,19 @@ void RHI::init()
                                         .select()
                                         .value();
     SPDLOG_INFO("Physical Device: {}", phyDevice.name);
+
+    //
+    // create device.
+    //
+    vkb::DeviceBuilder deviceBuilder(phyDevice);
+    _device = deviceBuilder.build().value();
+    _deviceFN = _device.make_table();
+    _graphicQueue = _device.get_queue(vkb::QueueType::graphics).value();
 }
 
 void RHI::close()
 {
+    _deviceFN.deviceWaitIdle();
+    vkb::destroy_device(_device);
     vkb::destroy_instance(_instance);
 }
