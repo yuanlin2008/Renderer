@@ -1,24 +1,37 @@
-#include "GLFW/glfw3.h"
+#include "SDL.h"
+#include "SDL_vulkan.h"
 #include <stdexcept>
 #include "rhi.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Window *window = SDL_CreateWindow("Renderer",
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          800, 600,
+                                          SDL_WINDOW_VULKAN);
 
-    RHI rhi;
-    rhi.init();
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "hahaha", "hello", nullptr);
+    SDL_Event e;
+    bool bQuit = false;
 
-    auto window = glfwCreateWindow(800, 600, "Renderer", nullptr, nullptr);
-    while (!glfwWindowShouldClose(window))
+    // main loop
+    while (!bQuit)
     {
-        glfwPollEvents();
+        // Handle events on queue
+        while (SDL_PollEvent(&e) != 0)
+        {
+            // close the window when user alt-f4s or clicks the X button
+            if (e.type == SDL_QUIT)
+                bQuit = true;
+        }
     }
-    rhi.close();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    SDL_DestroyWindow(window);
+    // RHI rhi;
+    // rhi.init();
+    // rhi.close();
+
     return 0;
 }

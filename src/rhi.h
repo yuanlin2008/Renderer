@@ -1,7 +1,6 @@
 #pragma once
 
-#include "volk.h"
-#include <vector>
+#include "VkBootstrap.h"
 
 class RHI
 {
@@ -10,6 +9,5 @@ public:
     void close();
 
 private:
-    VkInstance instance_ = VK_NULL_HANDLE;
-    std::vector<VkExtensionProperties> extensions_;
+    vkb::Instance instance_;
 };
