@@ -9,5 +9,5 @@ public:
     void close();
 
 private:
-    vkb::Instance instance_;
+    vkb::Instance _instance;
 };

@@ -2,6 +2,7 @@
 #include "SDL_vulkan.h"
 #include <stdexcept>
 #include "rhi.h"
+#include "spdlog/spdlog.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +13,9 @@ int main(int argc, char *argv[])
                                           800, 600,
                                           SDL_WINDOW_VULKAN);
 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "hahaha", "hello", nullptr);
+    RHI rhi;
+    rhi.init();
+
     SDL_Event e;
     bool bQuit = false;
 
@@ -28,10 +31,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    rhi.close();
     SDL_DestroyWindow(window);
-    // RHI rhi;
-    // rhi.init();
-    // rhi.close();
 
     return 0;
 }

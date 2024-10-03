@@ -8,6 +8,7 @@ add_executable(Renderer WIN32
     rhi.h rhi.cpp
 )
 target_link_libraries(Renderer PRIVATE 
+    spdlog::spdlog_header_only
     vk-bootstrap::vk-bootstrap
     SDL2::SDL2-static 
     SDL2::SDL2main)
