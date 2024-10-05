@@ -2,6 +2,7 @@
   "editor.formatOnSave": true,
   "files.associations": {
     "stdexcept": "cpp",
-    "type_traits": "cpp"
+    "type_traits": "cpp",
+    "system_error": "cpp"
   }
 }
