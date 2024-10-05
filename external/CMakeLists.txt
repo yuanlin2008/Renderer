@@ -75,3 +75,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb)
 # todo stb 
+
+###############################################################
+# fastgltf
+FetchContent_Declare(
+	fastgltf
+	#GIT_REPOSITORY https://github.com/spnda/fastgltf.git
+	GIT_REPOSITORY git@github.com:spnda/fastgltf.git
+	GIT_TAG d4734a7e55d8d25155e755d895e018e423845cd0 #0.8.0
+)
+FetchContent_MakeAvailable(fastgltf)
