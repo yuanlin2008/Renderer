@@ -62,3 +62,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 # todo imgui 
+
+###############################################################
+# stb
+FetchContent_Declare(
+	stb
+	#GIT_REPOSITORY https://github.com/nothings/stb.git
+	GIT_REPOSITORY git@github.com:nothings/stb.git
+	GIT_TAG 31707d14fdb75da66b3eed52a2236a70af0d0960
+	CONFIGURE_COMMAND ""
+	BUILD_COMMAND ""
+)
+FetchContent_MakeAvailable(stb)
+# todo stb 
