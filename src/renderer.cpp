@@ -1,10 +1,17 @@
+#include "renderer.h"
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_vulkan.h"
+
 #include <string>
 #include <stdexcept>
-#include "rhi.h"
 #include "spdlog/spdlog.h"
 
-void RHI::init()
+void Renderer::init()
 {
+    SDL_Init(SDL_INIT_VIDEO);
+    createWindow();
+
     //
     // create instance.
     //
@@ -60,9 +67,72 @@ void RHI::init()
     _graphicQueue = _device.get_queue(vkb::QueueType::graphics).value();
 }
 
-void RHI::close()
+void Renderer::run()
+{
+    SDL_Event e;
+    bool stopRendering = false;
+    bool bQuit = false;
+
+    // main loop
+    while (!bQuit)
+    {
+        // Handle events on queue
+        while (SDL_PollEvent(&e) != 0)
+        {
+            // close the window when user alt-f4s or clicks the X button
+            if (e.type == SDL_QUIT)
+                bQuit = true;
+
+            if (e.type == SDL_WINDOWEVENT)
+            {
+                if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
+                {
+                    stopRendering = true;
+                }
+                if (e.window.event == SDL_WINDOWEVENT_RESTORED)
+                {
+                    stopRendering = false;
+                }
+            }
+        }
+
+        // do not draw if we are minimized
+        if (stopRendering)
+        {
+            // throttle the speed to avoid the endless spinning
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
+        }
+
+        draw();
+    }
+}
+
+void Renderer::close()
 {
     _deviceFN.deviceWaitIdle();
     vkb::destroy_device(_device);
     vkb::destroy_instance(_instance);
+
+    destroyWindow();
+}
+
+void Renderer::createWindow()
+{
+    _window = SDL_CreateWindow(
+        "Renderer",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        800,
+        600,
+        SDL_WINDOW_VULKAN);
+}
+
+void Renderer::destroyWindow()
+{
+    SDL_DestroyWindow(_window);
+}
+
+void Renderer::draw()
+{
 }
