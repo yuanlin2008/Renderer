@@ -68,8 +68,10 @@ void Renderer::run()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
-
-        draw();
+        else
+        {
+            draw();
+        }
     }
 }
 
@@ -146,6 +148,7 @@ void Renderer::createSwapChain()
     vkb::SwapchainBuilder builder{_device};
     _swapChain = builder
                      .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+                     .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
                      .build()
                      .value();
     _swapChainImages = _swapChain.get_images().value();
