@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(Renderer 
     main.cpp
+    context.h context.cpp
+    device.h device.cpp
+    command_buffer.h command_buffer.cpp
     renderer.h renderer.cpp
 )
 target_link_libraries(Renderer PRIVATE 
