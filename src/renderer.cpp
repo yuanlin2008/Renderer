@@ -20,8 +20,11 @@ Renderer::Renderer()
         800,
         600,
         SDL_WINDOW_VULKAN);
+
     _context = new Context();
+
     SDL_Vulkan_CreateSurface(_window, _context->instance(), &_surface);
+
     _device = new Device(_context, _surface);
 
     vkb::SwapchainBuilder builder{_device->device()};
@@ -36,9 +39,10 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-    _device->table().deviceWaitIdle();
+    _device->waitIdle();
     clearFrames();
     vkb::destroy_swapchain(_swapChain);
+    _context->table().destroySurfaceKHR(_surface, nullptr);
     SDL_DestroyWindow(_window);
     delete _device;
     delete _context;
@@ -129,57 +133,29 @@ void Renderer::draw()
     cmd->reset(0);
 
     cmd->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-    cmd->transitionImage(_swapChainImages[scIndex], VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+    cmd->transitionImage(_swapChainImages[scIndex],
+                         VK_IMAGE_LAYOUT_UNDEFINED,
+                         VK_IMAGE_LAYOUT_GENERAL);
 
     float flash = std::abs(std::sin(_frameNumber / 120.f));
     VkClearColorValue clearClr = {{0.f, 0.f, flash, 1.f}};
     cmd->clearColorImage(_swapChainImages[scIndex], VK_IMAGE_LAYOUT_GENERAL, clearClr);
-    cmd->transitionImage(_swapChainImages[scIndex], VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    cmd->transitionImage(_swapChainImages[scIndex],
+                         VK_IMAGE_LAYOUT_GENERAL,
+                         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     cmd->end();
 
     // submit to the queue.
-    VkCommandBufferSubmitInfo info{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-        .pNext = nullptr,
-        .commandBuffer = cmd,
-        .deviceMask = 0};
-    VkSemaphoreSubmitInfo waitInfo{
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-        .pNext = nullptr,
-        .semaphore = frame.imageAcquiredSemaphore,
-        .value = 1,
-        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-        .deviceIndex = 0};
-    VkSemaphoreSubmitInfo sigInfo{
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-        .pNext = nullptr,
-        .semaphore = frame.renderCompletedSemaphore,
-        .value = 1,
-        .stageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
-        .deviceIndex = 0};
-    VkSubmitInfo2 submitInfo{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-        .pNext = nullptr,
-        .waitSemaphoreInfoCount = 1,
-        .pWaitSemaphoreInfos = &waitInfo,
-        .commandBufferInfoCount = 1,
-        .pCommandBufferInfos = &info,
-        .signalSemaphoreInfoCount = 1,
-        .pSignalSemaphoreInfos = &sigInfo};
-    _devDT.queueSubmit2(_graphicQueue, 1, &submitInfo, frame.renderCompletedFence);
+    cmd->submit(_device->graphicsQueue(),
+                frame.imageAcquiredSemaphore,
+                frame.renderCompletedSemaphore,
+                frame.renderCompletedFence);
 
     // present
-    VkPresentInfoKHR presentInfo{
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .pNext = nullptr,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &frame.renderCompletedSemaphore,
-        .swapchainCount = 1,
-        .pSwapchains = &_swapChain.swapchain,
-        .pImageIndices = &scIndex};
-
-    _devDT.queuePresentKHR(_graphicQueue, &presentInfo);
+    _device->present(_device->graphicsQueue(),
+                     &_swapChain.swapchain, scIndex,
+                     frame.renderCompletedSemaphore);
 
     // inc the frame number.
     _frameNumber++;

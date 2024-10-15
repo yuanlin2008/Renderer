@@ -22,6 +22,7 @@ public:
     void destroyFence(VkFence fence);
     VkSemaphore createSemaphore();
     void destroySemaphore(VkSemaphore s);
+    void waitIdle();
 
     VkCommandPool createCommandPool(VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex);
     void destroyCommandPool(VkCommandPool p);
@@ -29,6 +30,8 @@ public:
     CommandBuffer* createCommandBuffer(VkCommandPool pool);
     void destroyCommandBuffer(VkCommandPool pool, CommandBuffer* cb);
 
+    void present(VkQueue queue, VkSwapchainKHR* swapchain, uint32_t index, VkSemaphore wait);
+private:
     vkb::Device _device;
     vkb::DispatchTable _table;
     VkQueue _graphicsQueue;

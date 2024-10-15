@@ -53,7 +53,7 @@ VkFence Device::createFence(bool signaled)
     VkFenceCreateInfo fenceCI{
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
         .pNext = nullptr,
-        .flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : 0};
+        .flags = signaled ? VK_FENCE_CREATE_SIGNALED_BIT : (VkFenceCreateFlags)0};
     VkFence fence;
     _table.createFence(&fenceCI, nullptr, &fence);
     return fence;
@@ -78,6 +78,11 @@ VkSemaphore Device::createSemaphore()
 void Device::destroySemaphore(VkSemaphore s)
 {
     _table.destroySemaphore(s, nullptr);
+}
+
+void Device::waitIdle()
+{
+    _table.deviceWaitIdle();
 }
 
 VkCommandPool Device::createCommandPool(VkCommandPoolCreateFlags flags, uint32_t queueFamilyIndex)
@@ -108,7 +113,7 @@ CommandBuffer *Device::createCommandBuffer(VkCommandPool pool)
     };
     VkCommandBuffer cb;
     _table.allocateCommandBuffers(&cbai, &cb);
-    return new CommandBuffer(cb);
+    return new CommandBuffer(_table, cb);
 }
 
 void Device::destroyCommandBuffer(VkCommandPool pool, CommandBuffer *cb)
@@ -116,4 +121,18 @@ void Device::destroyCommandBuffer(VkCommandPool pool, CommandBuffer *cb)
     auto handle = cb->handle();
     _table.freeCommandBuffers(pool, 1, &handle);
     delete cb;
+}
+
+void Device::present(VkQueue queue, VkSwapchainKHR *swapchain, uint32_t index, VkSemaphore wait)
+{
+    VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &wait,
+        .swapchainCount = 1,
+        .pSwapchains = swapchain,
+        .pImageIndices = &index};
+
+    _table.queuePresentKHR(queue, &presentInfo);
 }

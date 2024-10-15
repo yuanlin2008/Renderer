@@ -30,6 +30,40 @@ void CommandBuffer::end()
     _table.endCommandBuffer(_cb);
 }
 
+void CommandBuffer::submit(VkQueue queue, VkSemaphore wait, VkSemaphore signal, VkFence singalFence)
+{
+    // submit to the queue.
+    VkCommandBufferSubmitInfo info{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .pNext = nullptr,
+        .commandBuffer = _cb,
+        .deviceMask = 0};
+    VkSemaphoreSubmitInfo waitInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .semaphore = wait,
+        .value = 1,
+        .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .deviceIndex = 0};
+    VkSemaphoreSubmitInfo sigInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .semaphore = signal,
+        .value = 1,
+        .stageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT,
+        .deviceIndex = 0};
+    VkSubmitInfo2 submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .pNext = nullptr,
+        .waitSemaphoreInfoCount = 1,
+        .pWaitSemaphoreInfos = &waitInfo,
+        .commandBufferInfoCount = 1,
+        .pCommandBufferInfos = &info,
+        .signalSemaphoreInfoCount = 1,
+        .pSignalSemaphoreInfos = &sigInfo};
+    _table.queueSubmit2(queue, 1, &submitInfo, singalFence);
+}
+
 void CommandBuffer::transitionImage(VkImage image, VkImageLayout currentLayout, VkImageLayout newLayout)
 {
     VkImageMemoryBarrier2 imageBarrier{.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
