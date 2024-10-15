@@ -14,4 +14,5 @@ target_link_libraries(Renderer PRIVATE
     spdlog::spdlog_header_only
     vk-bootstrap::vk-bootstrap
     SDL2::SDL2-static 
+    GPUOpen::VulkanMemoryAllocator
     )

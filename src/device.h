@@ -1,6 +1,9 @@
 #pragma once
 
 #include "VkBootstrap.h"
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+#include "vk_mem_alloc.h"
 
 class Context;
 class CommandBuffer;
@@ -34,6 +37,7 @@ public:
 private:
     vkb::Device _device;
     vkb::DispatchTable _table;
+    VmaAllocator _allocator;
     VkQueue _graphicsQueue;
     uint32_t _graphicsQueueFamily;
 };

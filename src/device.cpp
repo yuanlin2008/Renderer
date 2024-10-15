@@ -3,20 +3,18 @@
 #include "command_buffer.h"
 #include "spdlog/spdlog.h"
 
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 Device::Device(Context *ctx, VkSurfaceKHR surface)
 {
-    //
     // select a gpu.
-    //
-
-    // vulkan 1.3 features
     VkPhysicalDeviceVulkan13Features features13{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
         .synchronization2 = true,
         .dynamicRendering = true,
     };
 
-    // vulkan 1.2 features
     VkPhysicalDeviceVulkan12Features features12{
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .descriptorIndexing = true,
@@ -33,18 +31,29 @@ Device::Device(Context *ctx, VkSurfaceKHR surface)
                                         .value();
     SPDLOG_INFO("Physical Device: {}", phyDevice.name);
 
-    //
     // create device.
-    //
     vkb::DeviceBuilder deviceBuilder(phyDevice);
     _device = deviceBuilder.build().value();
     _table = _device.make_table();
     _graphicsQueue = _device.get_queue(vkb::QueueType::graphics).value();
     _graphicsQueueFamily = _device.get_queue_index(vkb::QueueType::graphics).value();
+
+    VmaVulkanFunctions vmaVKFuncs = {
+        .vkGetInstanceProcAddr = ctx->instance().fp_vkGetInstanceProcAddr,
+        .vkGetDeviceProcAddr = ctx->instance().fp_vkGetDeviceProcAddr
+    };
+    VmaAllocatorCreateInfo allocatorInfo = {
+        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+        .physicalDevice = phyDevice,
+        .device = _device,
+        .pVulkanFunctions = &vmaVKFuncs,
+        .instance = ctx->instance()};
+    vmaCreateAllocator(&allocatorInfo, &_allocator);
 }
 
 Device::~Device()
 {
+    vmaDestroyAllocator(_allocator);
     vkb::destroy_device(_device);
 }
 
