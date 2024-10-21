@@ -1,6 +1,9 @@
 #include "platform_sdl.h"
 
+#include "rhi/rhi_context_vulkan.h"
+
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_vulkan.h"
 
 void PlatformSDL::initialize() {
 	SDL_Init(SDL_INIT_VIDEO);

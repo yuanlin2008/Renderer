@@ -21,6 +21,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(vk-bootstrap)
 
 ###############################################################
+# volk
+FetchContent_Declare(
+	volk
+	#GIT_REPOSITORY https://github.com/zeux/volk.git
+	GIT_REPOSITORY git@github.com:zeux/volk.git
+	GIT_TAG 466085407d5d2f50583fd663c1d65f93a7709d3e # 1.3.296.0
+)
+FetchContent_MakeAvailable(volk)
+
+###############################################################
 # vma
 FetchContent_Declare(
 	vma

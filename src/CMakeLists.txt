@@ -3,8 +3,8 @@ project(Renderer)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(platform)
 add_subdirectory(rhi)
+add_subdirectory(platform)
 
 add_executable(Renderer 
     main.cpp

@@ -7,6 +7,7 @@ target_include_directories(platform PRIVATE
     ..
 )
 
-target_link_libraries(platform PRIVATE
+target_link_libraries(platform PUBLIC
     SDL2::SDL2-static 
+    rhi
 )
