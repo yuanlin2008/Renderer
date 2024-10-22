@@ -1,6 +1,8 @@
 #pragma once
 
-class RHIContext;
+#include "rhi_context.h"
+
+struct PlatformWindow {};
 
 class Platform {
 public:
@@ -12,12 +14,11 @@ public:
 	virtual void shutdown() = 0;
 	virtual void run() = 0;
 
-	RHIContext *get_rhi_context() { return rhi_context; }
+	virtual RHIContext *get_rhi_context() = 0;
 
-	struct Window {};
+	virtual PlatformWindow *create_window() = 0;
+	virtual void destroy_window(PlatformWindow *window) = 0;
 
-	struct Surface {};
-
-protected:
-	RHIContext *rhi_context = nullptr;
+	virtual RHISurface *create_surface(PlatformWindow *window) = 0;
+	virtual void destroy_surface(RHISurface *surface) = 0;
 };

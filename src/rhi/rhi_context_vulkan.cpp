@@ -26,7 +26,7 @@ RHIContextVulkan::~RHIContextVulkan() {
 	vkb::destroy_instance(instance);
 }
 
-RHIDevice *RHIContextVulkan::create_device() {
+RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
 	// select a gpu.
 	VkPhysicalDeviceVulkan13Features features13{
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
@@ -44,7 +44,7 @@ RHIDevice *RHIContextVulkan::create_device() {
 	vkb::PhysicalDevice phyDevice = pdSelector.set_minimum_version(1, 3)
 											.set_required_features_13(features13)
 											.set_required_features_12(features12)
-											.set_surface(surface)
+											.set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
 											.select()
 											.value();
 	SPDLOG_INFO("Physical Device: {}", phyDevice.name);

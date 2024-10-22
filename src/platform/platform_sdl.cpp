@@ -7,6 +7,12 @@
 
 void PlatformSDL::initialize() {
 	SDL_Init(SDL_INIT_VIDEO);
+
+	unsigned int ext_count;
+	SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, nullptr);
+	std::vector<const char *> extensions(ext_count);
+	SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, extensions.data());
+	rhi_context = new RHIContextVulkan(extensions);
 }
 
 void PlatformSDL::shutdown() {
@@ -45,4 +51,16 @@ void PlatformSDL::run() {
 			//draw();
 		}
 	}
+}
+
+PlatformWindow *PlatformSDL::create_window() {
+}
+
+void PlatformSDL::destroy_window(PlatformWindow *window) {
+}
+
+PlatformSurface *PlatformSDL::create_surface(PlatformWindow *window) {
+}
+
+void PlatformSDL::destroy_surface(PlatformSurface *surface) {
 }
