@@ -14,6 +14,10 @@ public:
 
 	RHIContext *get_rhi_context() { return rhi_context; }
 
+	struct Window {};
+
+	struct Surface {};
+
 protected:
 	RHIContext *rhi_context = nullptr;
 };

@@ -10,6 +10,7 @@ void PlatformSDL::initialize() {
 }
 
 void PlatformSDL::shutdown() {
+	SDL_Quit();
 }
 
 void PlatformSDL::run() {
