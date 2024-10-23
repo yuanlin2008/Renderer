@@ -7,5 +7,6 @@ struct RHISurface {};
 
 class RHIContext {
 public:
-	virtual class RHIDevice *create_device(struct RHISurface *surface) = 0;
+	virtual ~RHIContext() {}
+	virtual class RHIDevice *create_device(RHISurface *surface) = 0;
 };

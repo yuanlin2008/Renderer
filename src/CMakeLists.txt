@@ -3,18 +3,6 @@ project(Renderer)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(engine)
 add_subdirectory(rhi)
 add_subdirectory(platform)
-
-add_executable(Renderer 
-    main.cpp
-    context.h context.cpp
-    device.h device.cpp
-    command_buffer.h command_buffer.cpp
-    renderer.h renderer.cpp
-)
-target_link_libraries(Renderer PRIVATE 
-    spdlog::spdlog_header_only
-    rhi
-    platform
-)

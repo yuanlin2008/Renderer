@@ -1,6 +1,6 @@
 #include "platform_sdl.h"
 
-#include "rhi/rhi_context_vulkan.h"
+#include "rhi_context_vulkan.h"
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_vulkan.h"
@@ -8,6 +8,7 @@
 void PlatformSDL::initialize() {
 	SDL_Init(SDL_INIT_VIDEO);
 
+	SDL_Vulkan_LoadLibrary(nullptr);
 	unsigned int ext_count;
 	SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, nullptr);
 	std::vector<const char *> extensions(ext_count);
@@ -16,6 +17,8 @@ void PlatformSDL::initialize() {
 }
 
 void PlatformSDL::shutdown() {
+	delete rhi_context;
+	SDL_Vulkan_UnloadLibrary();
 	SDL_Quit();
 }
 
@@ -53,14 +56,20 @@ void PlatformSDL::run() {
 	}
 }
 
+RHIContext *PlatformSDL::get_rhi_context() {
+	return nullptr;
+}
+
 PlatformWindow *PlatformSDL::create_window() {
+	return nullptr;
 }
 
 void PlatformSDL::destroy_window(PlatformWindow *window) {
 }
 
-PlatformSurface *PlatformSDL::create_surface(PlatformWindow *window) {
+RHISurface *PlatformSDL::create_surface(PlatformWindow *window) {
+	return nullptr;
 }
 
-void PlatformSDL::destroy_surface(PlatformSurface *surface) {
+void PlatformSDL::destroy_surface(RHISurface *surface) {
 }
