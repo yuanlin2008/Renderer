@@ -13,10 +13,13 @@ public:
 	RHIContextVulkan(const std::vector<const char *> &platform_extensions);
 	~RHIContextVulkan();
 
-	virtual class RHIDevice *create_device(RHISurface *surface) override;
+	virtual RHIDevice *create_device(RHISurface *surface) override;
+	virtual void destroy_device(RHIDevice *device) override;
 
-	vkb::Instance get_instance() { return instance; }
+	vkb::Instance &get_instance() { return instance; }
+	vkb::InstanceDispatchTable &get_instance_funcs() { return instance_funcs; }
 
 private:
 	vkb::Instance instance;
+	vkb::InstanceDispatchTable instance_funcs;
 };

@@ -3,6 +3,8 @@ add_library(engine STATIC
     platform.h
     rhi_context.h
     rhi_device.h
+    engine.h
+    engine.cpp
 )
 
 target_include_directories(engine 

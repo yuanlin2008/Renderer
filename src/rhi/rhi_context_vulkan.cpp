@@ -20,6 +20,7 @@ RHIContextVulkan::RHIContextVulkan(const std::vector<const char *> &extensions) 
 				ret.error().message());
 	}
 	instance = ret.value();
+	instance_funcs = instance.make_table();
 }
 
 RHIContextVulkan::~RHIContextVulkan() {
@@ -27,7 +28,7 @@ RHIContextVulkan::~RHIContextVulkan() {
 }
 
 RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
-	// select a gpu.
+	// select a device.
 	VkPhysicalDeviceVulkan13Features features13{
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
 		.synchronization2 = true,
@@ -40,13 +41,17 @@ RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
 		.bufferDeviceAddress = true,
 	};
 
-	vkb::PhysicalDeviceSelector pdSelector(instance);
-	vkb::PhysicalDevice phyDevice = pdSelector.set_minimum_version(1, 3)
-											.set_required_features_13(features13)
-											.set_required_features_12(features12)
-											.set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
-											.select()
-											.value();
-	SPDLOG_INFO("Physical Device: {}", phyDevice.name);
-	return new RHIDeviceVulkan(this);
+	vkb::PhysicalDeviceSelector selector(instance);
+	vkb::PhysicalDevice device = selector.set_minimum_version(1, 3)
+										 .set_required_features_13(features13)
+										 .set_required_features_12(features12)
+										 .set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
+										 .select()
+										 .value();
+	SPDLOG_INFO("Physical Device: {}", device.name);
+	return new RHIDeviceVulkan(this, device);
+}
+
+void RHIContextVulkan::destroy_device(RHIDevice *device) {
+	delete device;
 }
