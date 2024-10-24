@@ -42,12 +42,18 @@ RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
 	};
 
 	vkb::PhysicalDeviceSelector selector(instance);
-	vkb::PhysicalDevice device = selector.set_minimum_version(1, 3)
-										 .set_required_features_13(features13)
-										 .set_required_features_12(features12)
-										 .set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
-										 .select()
-										 .value();
+	auto ret = selector.set_minimum_version(1, 3)
+					   .set_required_features_13(features13)
+					   .set_required_features_12(features12)
+					   .set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
+					   .select();
+	if (!ret) {
+		throw std::runtime_error(
+				std::string("Failed to select device. Error: ") +
+				ret.error().message());
+	}
+
+	vkb::PhysicalDevice device = ret.value();
 	SPDLOG_INFO("Physical Device: {}", device.name);
 	return new RHIDeviceVulkan(this, device);
 }

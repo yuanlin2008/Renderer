@@ -8,8 +8,14 @@
 
 RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *context, vkb::PhysicalDevice &physical_device) {
 	// create device.
-	vkb::DeviceBuilder deviceBuilder(physical_device);
-	device = deviceBuilder.build().value();
+	vkb::DeviceBuilder builder(physical_device);
+	auto ret = builder.build();
+	if (!ret) {
+		throw std::runtime_error(
+				std::string("Failed to create device. Error: ") +
+				ret.error().message());
+	}
+	device = ret.value();
 	device_funcs = device.make_table();
 
 	// create vma.
@@ -24,7 +30,9 @@ RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *context, vkb::PhysicalDevice 
 		.pVulkanFunctions = &vmaVKFuncs,
 		.instance = context->get_instance()
 	};
-	vmaCreateAllocator(&allocatorInfo, &vma_allocator);
+	if (vmaCreateAllocator(&allocatorInfo, &vma_allocator) != VK_SUCCESS) {
+		throw std::runtime_error("Failed to create vma allocator.");
+	}
 }
 
 RHIDeviceVulkan::~RHIDeviceVulkan() {
