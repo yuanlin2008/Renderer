@@ -3,8 +3,6 @@
 #include "rhi_device_vulkan.h"
 #include "spdlog/spdlog.h"
 
-#include <stdexcept>
-
 const bool UseValidationLayers = true;
 
 RHIContextVulkan::RHIContextVulkan(const std::vector<const char *> &extensions) {

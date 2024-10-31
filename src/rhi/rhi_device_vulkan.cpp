@@ -3,8 +3,6 @@
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
-#include <stdexcept>
-
 static const VkFormat RHI_TO_VK_FORMAT[(int)RHIFormat::MAX] = {
 	VK_FORMAT_R4G4_UNORM_PACK8,
 	VK_FORMAT_R4G4B4A4_UNORM_PACK16,
