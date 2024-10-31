@@ -1,8 +1,7 @@
 #pragma once
 
 #include "rhi_context.h"
-
-#include "VkBootstrap.h"
+#include "rhi_vulkan.h"
 
 struct RHISurfaceVulkan : public RHISurface {
 	VkSurfaceKHR surface;
