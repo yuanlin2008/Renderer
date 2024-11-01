@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rhi_context.h"
 #include "rhi_vulkan.h"
 
 struct RHISurfaceVulkan : public RHISurface {
