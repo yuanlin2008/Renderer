@@ -1,0 +1,9 @@
+[submodule "external/sdl"]
+	path = external/sdl
+	url = git@github.com:libsdl-org/SDL.git
+[submodule "external/vk-bootstrap"]
+	path = external/vk-bootstrap
+	url = git@github.com:charles-lunarg/vk-bootstrap.git
+[submodule "external/vma"]
+	path = external/vma
+	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
