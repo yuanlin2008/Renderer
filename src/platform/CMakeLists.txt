@@ -6,7 +6,7 @@ add_executable(renderer
 
 target_link_libraries(renderer PRIVATE
     spdlog::spdlog_header_only
-    SDL2::SDL2-static 
+    SDL3::SDL3
     engine
     rhi
 )
