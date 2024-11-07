@@ -5,7 +5,7 @@
 
 const bool UseValidationLayers = true;
 
-RHIContextVulkan::RHIContextVulkan(const std::vector<const char *> &extensions) {
+RHIContextVulkan::RHIContextVulkan() {
 	vkb::InstanceBuilder builder;
 	auto ret = builder.set_app_name("Renderer")
 					   .request_validation_layers(UseValidationLayers)

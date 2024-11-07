@@ -8,7 +8,7 @@ struct RHISurfaceVulkan : public RHISurface {
 
 class RHIContextVulkan : public RHIContext {
 public:
-	RHIContextVulkan(const std::vector<const char *> &platform_extensions);
+	RHIContextVulkan();
 	~RHIContextVulkan();
 
 	virtual RHIDevice *create_device(RHISurface *surface) override;

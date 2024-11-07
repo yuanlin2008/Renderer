@@ -3,18 +3,15 @@
 #include "engine.h"
 #include "rhi_context_vulkan.h"
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_vulkan.h"
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_vulkan.h"
 
 PlatformSDL::PlatformSDL() {
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_Vulkan_LoadLibrary(nullptr);
-	unsigned int ext_count;
-	SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, nullptr);
-	std::vector<const char *> extensions(ext_count);
-	SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, extensions.data());
-	rhi_context = new RHIContextVulkan(extensions);
+	//SDL_Vulkan_GetInstanceExtensions(nullptr, &ext_count, nullptr);
+	rhi_context = new RHIContextVulkan();
 }
 
 PlatformSDL::~PlatformSDL() {
@@ -29,7 +26,7 @@ void PlatformSDL::handle_events() {
 	// Handle events on queue
 	while (SDL_PollEvent(&e) != 0) {
 		// close the window when user alt-f4s or clicks the X button
-		if (e.type == SDL_QUIT) {
+		if (e.type == SDL_EVENT_QUIT) {
 			Engine::quit();
 		}
 	}
@@ -46,8 +43,6 @@ struct PlatformWindowSDL : public PlatformWindow {
 PlatformWindow *PlatformSDL::create_window(const char *title, int width, int height) {
 	PlatformWindowSDL *window = new PlatformWindowSDL{
 		.window = SDL_CreateWindow(title,
-				SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED,
 				width,
 				height,
 				SDL_WINDOW_VULKAN)
@@ -65,6 +60,7 @@ RHISurface *PlatformSDL::create_surface(PlatformWindow *window) {
 	SDL_Vulkan_CreateSurface(
 			static_cast<PlatformWindowSDL *>(window)->window,
 			static_cast<RHIContextVulkan *>(rhi_context)->get_instance(),
+			nullptr,
 			&surface->surface);
 	return surface;
 }

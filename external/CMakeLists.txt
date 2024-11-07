@@ -1,3 +1,5 @@
+set(SDL_SHARED OFF)
+set(SDL_STATIC ON)
 add_subdirectory(sdl)
 add_subdirectory(vk-bootstrap)
 add_subdirectory(vma)
