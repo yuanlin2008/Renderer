@@ -3,6 +3,13 @@
   "files.associations": {
     "stdexcept": "cpp",
     "type_traits": "cpp",
-    "system_error": "cpp"
+    "system_error": "cpp",
+    "algorithm": "cpp",
+    "complex": "cpp",
+    "expected": "cpp",
+    "optional": "cpp",
+    "xlocmon": "cpp",
+    "xtr1common": "cpp",
+    "xutility": "cpp"
   }
 }

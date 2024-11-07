@@ -1,6 +1,7 @@
 set(SDL_SHARED OFF)
 set(SDL_STATIC ON)
 add_subdirectory(sdl)
+add_subdirectory(vulkan-headers)
 add_subdirectory(vk-bootstrap)
 add_subdirectory(vma)
 add_subdirectory(glm)
