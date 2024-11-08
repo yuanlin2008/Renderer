@@ -1,7 +1,12 @@
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_vulkan.h"
 #include "engine.h"
-#include "platform_sdl.h"
 
 #include <iostream>
+
+int pmain() {
+	SDL_Init(SDL_INIT_VIDEO);
+}
 
 int main(int argc, char *argv[]) {
 	try {
