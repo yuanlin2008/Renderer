@@ -10,8 +10,6 @@ PUBLIC
 )
 
 target_link_libraries(rhi PUBLIC
-    spdlog::spdlog_header_only
-    #volk::volk
     vk-bootstrap::vk-bootstrap
     GPUOpen::VulkanMemoryAllocator
     engine

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "SDL3/SDL.h"
 #include "rhi_context.h"
-
 #include <cstdint>
 
 struct RHICommandQueue {};
@@ -11,7 +11,7 @@ struct RHIBuffer {};
 struct RHITexture {};
 struct RHISampler {};
 struct RHIVertexFormat {};
-struct RHISwapChain {};
+struct RHISwapChain;
 struct RHIFramebuffer {};
 struct RHIShader {};
 struct RHIUniformSet {};
@@ -268,6 +268,13 @@ enum class RHICommandQueueType {
 class RHIDevice {
 public:
 	virtual ~RHIDevice() {}
+
+	/******************************
+	 * Swapchain.
+	 ******************************/
+	virtual RHISwapChain *create_swapchain(SDL_Window *window, uint32_t count) = 0;
+	virtual void destroy_swapchain(RHISwapChain *swapchain) = 0;
+	virtual void resize_swapchain(RHISwapChain *swapchain) = 0;
 
 	/******************************
 	 * Buffer
