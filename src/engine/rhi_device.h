@@ -156,6 +156,13 @@ public:
 	virtual RHICommandQueue *get_command_queue(RHICommandQueueType type) = 0;
 
 	/******************************
+	 * Command Pool.
+	 ******************************/
+	// virtual RHICommandPool *create_command_pool(RHICommandQueueType type) = 0;
+	// virtual void destroy_command_pool(RHICommandPool *pool) = 0;
+	// virtual void reset_command_pool(RHICommandPool* pool) = 0;
+
+	/******************************
 	 * Swapchain.
 	 ******************************/
 	virtual RHISwapChain *create_swapchain(SDL_Window *window, RHICommandQueue *queue, RHIFormat format, uint32_t count) = 0;
@@ -169,12 +176,6 @@ public:
 	// virtual void destroy_buffer(RHIBuffer *buffer) = 0;
 	// virtual uint8_t *map_buffer_memory(RHIBuffer *buffer) = 0;
 	// virtual void unmap_buffer_memory(RHIBuffer *buffer) = 0;
-
-	/******************************
-	 * Command Pool.
-	 ******************************/
-	//virtual RHICommandPool *create_command_pool(RHICommandQueueType type) = 0;
-	//virtual void destroy_command_pool(RHICommandPool *pool) = 0;
 
 	/******************************
 	 * Command Pool.
