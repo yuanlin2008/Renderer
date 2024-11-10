@@ -4,22 +4,27 @@
 
 #include <iostream>
 
+static RHIContext *context = nullptr;
+static RHIDevice *device = nullptr;
+static RHICommandQueue *queue = nullptr;
 static SDL_Window *main_window = nullptr;
-static RHIContext *rhi_context = nullptr;
-static RHIDevice *rhi_device = nullptr;
+static RHISwapChain *swapchain = nullptr;
 static bool quit = false;
 
 void init() {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Vulkan_LoadLibrary(nullptr);
 	main_window = SDL_CreateWindow("test", 1024, 768, SDL_WINDOW_VULKAN);
-	rhi_context = new RHIContextVulkan();
-	rhi_device = rhi_context->create_device();
+	context = new RHIContextVulkan();
+	device = context->create_device();
+	queue = device->get_command_queue(RHICommandQueueType::Graphics);
+	swapchain = device->create_swapchain(main_window, queue, RHIFormat::R8G8B8A8_UNORM, 3);
 }
 
 void shutdown() {
-	rhi_context->destroy_device(rhi_device);
-	delete rhi_context;
+	device->destroy_swapchain(swapchain);
+	context->destroy_device(device);
+	delete context;
 	SDL_DestroyWindow(main_window);
 	SDL_Vulkan_UnloadLibrary();
 	SDL_Quit();
