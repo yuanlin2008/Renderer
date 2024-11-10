@@ -18,6 +18,20 @@ public:
 	// virtual uint8_t *map_buffer_memory(RHIBuffer *buffer) override;
 	// virtual void unmap_buffer_memory(RHIBuffer *buffer) override;
 
+	/******************************
+	 * Command Queue.
+	 ******************************/
+	virtual RHICommandQueue *get_command_queue(RHICommandQueueType type) override;
+
+	/******************************
+	 * Swapchain.
+	 ******************************/
+	virtual RHISwapChain *create_swapchain(SDL_Window *window, RHICommandQueue *queue, RHIFormat format, uint32_t count) override;
+	virtual void destroy_swapchain(RHISwapChain *swapchain) override;
+
+	/******************************
+	 * Fence
+	 ******************************/
 	virtual RHIFence *create_fence(uint64_t init_value) override;
 	virtual void destroy_fence(RHIFence *fence) override;
 	virtual uint64_t get_fence_value(RHIFence *fence) override;
@@ -25,7 +39,9 @@ public:
 	virtual void signal_fence(RHIFence *fence, uint64_t value) override;
 
 private:
+	RHIContextVulkan *context = nullptr;
 	vkb::Device device;
 	vkb::DispatchTable api;
 	VmaAllocator vma_allocator;
+	RHICommandQueue *queue = nullptr;
 };

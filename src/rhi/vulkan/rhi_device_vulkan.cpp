@@ -1,13 +1,28 @@
 #include "rhi_device_vulkan.h"
 
+#include "SDL3/SDL_vulkan.h"
+
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
-struct RHIFence {
-	VkSemaphore semaphore{ nullptr };
+struct RHICommandQueue {
+	VkQueue vk_queue = VK_NULL_HANDLE;
 };
 
-RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *context, vkb::PhysicalDevice &physical_device) {
+struct RHISwapChain {
+	RHICommandQueue *queue = nullptr;
+	RHIFormat format = RHIFormat::_Count;
+	uint32_t count = 0;
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+};
+
+struct RHIFence {
+	VkSemaphore vk_semaphore = VK_NULL_HANDLE;
+};
+
+RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *ctx, vkb::PhysicalDevice &physical_device) {
+	context = ctx;
 	// create device.
 	vkb::DeviceBuilder builder(physical_device);
 	auto ret = builder.build();
@@ -19,24 +34,83 @@ RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *context, vkb::PhysicalDevice 
 	device = ret.value();
 	api = device.make_table();
 
+	// graphics queue.
+	auto ret_queue = device.get_queue(vkb::QueueType::graphics);
+	if (!ret_queue) {
+		throw std::runtime_error(ret.error().message());
+	}
+	queue = new RHICommandQueue{
+		.vk_queue = ret_queue.value()
+	};
+
 	// create vma.
 	VmaVulkanFunctions vma_funcs = {
-		.vkGetInstanceProcAddr = context->get_instance().fp_vkGetInstanceProcAddr,
-		.vkGetDeviceProcAddr = context->get_instance().fp_vkGetDeviceProcAddr
+		.vkGetInstanceProcAddr = context->instance.fp_vkGetInstanceProcAddr,
+		.vkGetDeviceProcAddr = context->instance.fp_vkGetDeviceProcAddr
 	};
 	VmaAllocatorCreateInfo alloc_info = {
 		.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
 		.physicalDevice = physical_device,
 		.device = device,
 		.pVulkanFunctions = &vma_funcs,
-		.instance = context->get_instance()
+		.instance = context->instance
 	};
 	VK_CHECK(vmaCreateAllocator(&alloc_info, &vma_allocator));
 }
 
 RHIDeviceVulkan::~RHIDeviceVulkan() {
+	delete queue;
 	vmaDestroyAllocator(vma_allocator);
 	vkb::destroy_device(device);
+}
+
+RHICommandQueue *RHIDeviceVulkan::get_command_queue(RHICommandQueueType type) {
+	if (type == RHICommandQueueType::Graphics) {
+		return queue;
+	}
+	return nullptr;
+}
+
+RHISwapChain *RHIDeviceVulkan::create_swapchain(SDL_Window *window, RHICommandQueue *queue, RHIFormat format, uint32_t count) {
+	VkSurfaceKHR vk_surface;
+	SDL_Vulkan_CreateSurface(window, context->instance, nullptr, &vk_surface);
+
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+
+	VkSwapchainCreateInfoKHR ci = {};
+	ci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	ci.surface = vk_surface;
+	ci.minImageCount = count;
+	ci.imageFormat = get_format(format);
+	ci.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+	ci.imageExtent.width = w;
+	ci.imageExtent.height = h;
+	ci.imageArrayLayers = 1;
+	ci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	ci.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	ci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	ci.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+	ci.clipped = VK_TRUE;
+	ci.oldSwapchain = VK_NULL_HANDLE;
+
+	VkSwapchainKHR vk_swapchain;
+	VK_CHECK(api.createSwapchainKHR(&ci, nullptr, &vk_swapchain));
+
+	return new RHISwapChain{
+		.queue = queue,
+		.format = format,
+		.count = count,
+		.vk_surface = vk_surface,
+		.vk_swapchain = vk_swapchain,
+	};
+}
+
+void RHIDeviceVulkan::destroy_swapchain(RHISwapChain *swapchain) {
+	api.destroySwapchainKHR(swapchain->vk_swapchain, nullptr);
+	context->api.destroySurfaceKHR(swapchain->vk_surface, nullptr);
+	delete swapchain;
 }
 
 RHIFence *RHIDeviceVulkan::create_fence(uint64_t init_value) {
@@ -53,26 +127,26 @@ RHIFence *RHIDeviceVulkan::create_fence(uint64_t init_value) {
 	ci.pNext = &timeline_ci;
 	ci.flags = 0;
 
-	VK_CHECK(api.createSemaphore(&ci, nullptr, &fence->semaphore));
+	VK_CHECK(api.createSemaphore(&ci, nullptr, &fence->vk_semaphore));
 
 	return fence;
 }
 
 void RHIDeviceVulkan::destroy_fence(RHIFence *fence) {
-	api.destroySemaphore(fence->semaphore, nullptr);
+	api.destroySemaphore(fence->vk_semaphore, nullptr);
 	delete fence;
 }
 
 uint64_t RHIDeviceVulkan::get_fence_value(RHIFence *fence) {
 	uint64_t value;
-	VK_CHECK(api.getSemaphoreCounterValue(fence->semaphore, &value));
+	VK_CHECK(api.getSemaphoreCounterValue(fence->vk_semaphore, &value));
 	return value;
 }
 
 void RHIDeviceVulkan::wait_fences(RHIFence **fence, uint64_t *value, uint32_t count) {
 	std::vector<VkSemaphore> semaphores(count, VK_NULL_HANDLE);
 	for (uint32_t i = 0; i < count; i++) {
-		semaphores[i] = fence[i]->semaphore;
+		semaphores[i] = fence[i]->vk_semaphore;
 	}
 	VkSemaphoreWaitInfo wait_info;
 	wait_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -88,7 +162,7 @@ void RHIDeviceVulkan::signal_fence(RHIFence *fence, uint64_t value) {
 	VkSemaphoreSignalInfo sig_info;
 	sig_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
 	sig_info.pNext = nullptr;
-	sig_info.semaphore = fence->semaphore;
+	sig_info.semaphore = fence->vk_semaphore;
 	sig_info.value = value;
 
 	VK_CHECK(api.signalSemaphore(&sig_info));

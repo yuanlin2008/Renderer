@@ -4,7 +4,7 @@
 #include "rhi_context.h"
 #include <cstdint>
 
-struct RHICommandQueue {};
+struct RHICommandQueue;
 struct RHICommandPool {};
 struct RHICommandBuffer {};
 struct RHIBuffer {};
@@ -151,10 +151,15 @@ public:
 	virtual ~RHIDevice() {}
 
 	/******************************
+	 * Command Queue.
+	 ******************************/
+	virtual RHICommandQueue *get_command_queue(RHICommandQueueType type) = 0;
+
+	/******************************
 	 * Swapchain.
 	 ******************************/
-	// virtual RHISwapChain *create_swapchain(SDL_Window *window, RHIFormat format, uint32_t count) = 0;
-	// virtual void destroy_swapchain(RHISwapChain *swapchain) = 0;
+	virtual RHISwapChain *create_swapchain(SDL_Window *window, RHICommandQueue *queue, RHIFormat format, uint32_t count) = 0;
+	virtual void destroy_swapchain(RHISwapChain *swapchain) = 0;
 	// virtual void resize_swapchain(RHISwapChain *swapchain) = 0;
 
 	/******************************
@@ -164,11 +169,6 @@ public:
 	// virtual void destroy_buffer(RHIBuffer *buffer) = 0;
 	// virtual uint8_t *map_buffer_memory(RHIBuffer *buffer) = 0;
 	// virtual void unmap_buffer_memory(RHIBuffer *buffer) = 0;
-
-	/******************************
-	 * Command Queue.
-	 ******************************/
-	//virtual RHICommandQueue *get_command_queue(RHICommandQueueType type) = 0;
 
 	/******************************
 	 * Command Pool.

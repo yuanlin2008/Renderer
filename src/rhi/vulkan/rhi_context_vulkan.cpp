@@ -18,7 +18,7 @@ RHIContextVulkan::RHIContextVulkan() {
 				ret.error().message());
 	}
 	instance = ret.value();
-	instance_funcs = instance.make_table();
+	api = instance.make_table();
 }
 
 RHIContextVulkan::~RHIContextVulkan() {
