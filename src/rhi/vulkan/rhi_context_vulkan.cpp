@@ -25,7 +25,7 @@ RHIContextVulkan::~RHIContextVulkan() {
 	vkb::destroy_instance(instance);
 }
 
-RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
+RHIDevice *RHIContextVulkan::create_device() {
 	// select a device.
 	VkPhysicalDeviceVulkan13Features features13{
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
@@ -36,6 +36,7 @@ RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
 	VkPhysicalDeviceVulkan12Features features12{
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
 		.descriptorIndexing = true,
+		.timelineSemaphore = true,
 		.bufferDeviceAddress = true,
 	};
 
@@ -43,7 +44,7 @@ RHIDevice *RHIContextVulkan::create_device(RHISurface *surface) {
 	auto ret = selector.set_minimum_version(1, 3)
 					   .set_required_features_13(features13)
 					   .set_required_features_12(features12)
-					   .set_surface(static_cast<RHISurfaceVulkan *>(surface)->surface)
+					   .defer_surface_initialization()
 					   .select();
 	if (!ret) {
 		throw std::runtime_error(

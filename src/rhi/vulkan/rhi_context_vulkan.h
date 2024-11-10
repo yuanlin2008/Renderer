@@ -1,17 +1,13 @@
 #pragma once
 
-#include "rhi_vulkan.h"
-
-struct RHISurfaceVulkan : public RHISurface {
-	VkSurfaceKHR surface;
-};
+#include "vk_util.h"
 
 class RHIContextVulkan : public RHIContext {
 public:
 	RHIContextVulkan();
 	~RHIContextVulkan();
 
-	virtual RHIDevice *create_device(RHISurface *surface) override;
+	virtual RHIDevice *create_device() override;
 	virtual void destroy_device(RHIDevice *device) override;
 
 	vkb::Instance &get_instance() { return instance; }
