@@ -6,7 +6,16 @@
 #include "vk_mem_alloc.h"
 
 struct RHICommandQueue {
+	uint32_t vk_family_id;
 	VkQueue vk_queue = VK_NULL_HANDLE;
+};
+
+struct RHICommandPool {
+	VkCommandPool vk_command_pool;
+};
+
+struct RHICommandBuffer {
+	VkCommandBuffer vk_cmd_buf;
 };
 
 struct RHISwapChain {
@@ -35,13 +44,13 @@ RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *ctx, vkb::PhysicalDevice &phy
 	api = device.make_table();
 
 	// graphics queue.
-	auto ret_queue = device.get_queue(vkb::QueueType::graphics);
-	if (!ret_queue) {
+	auto ret_qfid = device.get_queue_index(vkb::QueueType::graphics);
+	if (!ret_qfid) {
 		throw std::runtime_error(ret.error().message());
 	}
-	queue = new RHICommandQueue{
-		.vk_queue = ret_queue.value()
-	};
+	queue = new RHICommandQueue{};
+	queue->vk_family_id = ret_qfid.value();
+	api.getDeviceQueue(ret_qfid.value(), 0, &queue->vk_queue);
 
 	// create vma.
 	VmaVulkanFunctions vma_funcs = {
@@ -65,10 +74,59 @@ RHIDeviceVulkan::~RHIDeviceVulkan() {
 }
 
 RHICommandQueue *RHIDeviceVulkan::get_command_queue(RHICommandQueueType type) {
-	if (type == RHICommandQueueType::Graphics) {
-		return queue;
-	}
-	return nullptr;
+	return queue;
+}
+
+RHICommandPool *RHIDeviceVulkan::create_command_pool(RHICommandQueueType type) {
+	VkCommandPoolCreateInfo ci{};
+	ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	ci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	ci.queueFamilyIndex = queue->vk_family_id;
+	VkCommandPool pool;
+	VK_CHECK(api.createCommandPool(&ci, nullptr, &pool));
+	return new RHICommandPool{
+		.vk_command_pool = pool
+	};
+}
+
+void RHIDeviceVulkan::destroy_command_pool(RHICommandPool *pool) {
+	api.destroyCommandPool(pool->vk_command_pool, nullptr);
+	delete pool;
+}
+
+void RHIDeviceVulkan::reset_command_pool(RHICommandPool *pool) {
+	api.resetCommandPool(pool->vk_command_pool, 0);
+}
+
+RHICommandBuffer *RHIDeviceVulkan::create_command_buffer(RHICommandPool *pool) {
+	VkCommandBufferAllocateInfo ci = {};
+	ci.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	ci.commandPool = pool->vk_command_pool;
+	ci.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	ci.commandBufferCount = 1;
+	VkCommandBuffer cmd_buff;
+	VK_CHECK(api.allocateCommandBuffers(&ci, &cmd_buff));
+	return new RHICommandBuffer{
+		.vk_cmd_buf = cmd_buff
+	};
+}
+
+void RHIDeviceVulkan::destroy_command_buffer(RHICommandPool *pool, RHICommandBuffer *cb) {
+	api.freeCommandBuffers(pool->vk_command_pool, 1, &cb->vk_cmd_buf);
+	delete cb;
+}
+
+void RHIDeviceVulkan::begin_command_buffer(RHICommandBuffer *cmd_buffer) {
+	VkCommandBufferBeginInfo info = {
+		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+		nullptr,
+		VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+	};
+	VK_CHECK(api.beginCommandBuffer(cmd_buffer->vk_cmd_buf, &info));
+}
+
+void RHIDeviceVulkan::end_command_buffer(RHICommandBuffer *cmd_buffer) {
+	VK_CHECK(api.endCommandBuffer(cmd_buffer->vk_cmd_buf));
 }
 
 RHISwapChain *RHIDeviceVulkan::create_swapchain(SDL_Window *window, RHICommandQueue *queue, RHIFormat format, uint32_t count) {

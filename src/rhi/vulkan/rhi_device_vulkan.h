@@ -13,15 +13,25 @@ public:
 	RHIDeviceVulkan(RHIContextVulkan *context, vkb::PhysicalDevice &physical_device);
 	virtual ~RHIDeviceVulkan() override;
 
-	// virtual RHIBuffer *create_buffer(uint64_t size, uint32_t usage, RHIMemoryType alloc_type, RHIFormat format) override;
-	// virtual void destroy_buffer(RHIBuffer *buffer) override;
-	// virtual uint8_t *map_buffer_memory(RHIBuffer *buffer) override;
-	// virtual void unmap_buffer_memory(RHIBuffer *buffer) override;
-
 	/******************************
 	 * Command Queue.
 	 ******************************/
 	virtual RHICommandQueue *get_command_queue(RHICommandQueueType type) override;
+
+	/******************************
+	 * Command Pool.
+	 ******************************/
+	virtual RHICommandPool *create_command_pool(RHICommandQueueType type) override;
+	virtual void destroy_command_pool(RHICommandPool *pool) override;
+	virtual void reset_command_pool(RHICommandPool *pool) override;
+
+	/******************************
+	 * Command Buffer.
+	 ******************************/
+	virtual RHICommandBuffer *create_command_buffer(RHICommandPool *pool) override;
+	virtual void destroy_command_buffer(RHICommandPool *pool, RHICommandBuffer *cb) override;
+	virtual void begin_command_buffer(RHICommandBuffer *cmd_buffer) override;
+	virtual void end_command_buffer(RHICommandBuffer *cmd_buffer) override;
 
 	/******************************
 	 * Swapchain.

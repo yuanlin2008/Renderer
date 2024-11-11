@@ -5,8 +5,8 @@
 #include <cstdint>
 
 struct RHICommandQueue;
-struct RHICommandPool {};
-struct RHICommandBuffer {};
+struct RHICommandPool;
+struct RHICommandBuffer;
 struct RHIBuffer {};
 struct RHITexture {};
 struct RHISampler {};
@@ -158,9 +158,17 @@ public:
 	/******************************
 	 * Command Pool.
 	 ******************************/
-	// virtual RHICommandPool *create_command_pool(RHICommandQueueType type) = 0;
-	// virtual void destroy_command_pool(RHICommandPool *pool) = 0;
-	// virtual void reset_command_pool(RHICommandPool* pool) = 0;
+	virtual RHICommandPool *create_command_pool(RHICommandQueueType type) = 0;
+	virtual void destroy_command_pool(RHICommandPool *pool) = 0;
+	virtual void reset_command_pool(RHICommandPool *pool) = 0;
+
+	/******************************
+	 * Command Buffer.
+	 ******************************/
+	virtual RHICommandBuffer *create_command_buffer(RHICommandPool *pool) = 0;
+	virtual void destroy_command_buffer(RHICommandPool *pool, RHICommandBuffer *cb) = 0;
+	virtual void begin_command_buffer(RHICommandBuffer *cmd_buffer) = 0;
+	virtual void end_command_buffer(RHICommandBuffer *cmd_buffer) = 0;
 
 	/******************************
 	 * Swapchain.
@@ -176,13 +184,6 @@ public:
 	// virtual void destroy_buffer(RHIBuffer *buffer) = 0;
 	// virtual uint8_t *map_buffer_memory(RHIBuffer *buffer) = 0;
 	// virtual void unmap_buffer_memory(RHIBuffer *buffer) = 0;
-
-	/******************************
-	 * Command Pool.
-	 ******************************/
-	//virtual RHICommandBuffer *alloc_command_buffer(RHICommandPool *pool) = 0;
-	//virtual void begin_command_buffer(RHICommandBuffer *cmd_buffer) = 0;
-	//virtual void end_command_buffer(RHICommandBuffer *cmd_buffer) = 0;
 
 	/******************************
 	 * Fence
