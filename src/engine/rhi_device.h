@@ -140,6 +140,64 @@ enum class RHIFormat {
 	_Count,
 };
 
+enum class RHIResourceState {
+	Undefined,
+	General,
+	PreInitialized,
+	VertexBuffer,
+	IndexBuffer,
+	ConstantBuffer,
+	StreamOutput,
+	ShaderResource,
+	UnorderedAccess,
+	RenderTarget,
+	DepthRead,
+	DepthWrite,
+	Present,
+	IndirectArgument,
+	CopySource,
+	CopyDestination,
+	ResolveSource,
+	ResolveDestination,
+	AccelerationStructure,
+	AccelerationStructureBuildInput,
+	PixelShaderResource,
+	NonPixelShaderResource,
+	_Count
+};
+
+struct RHIResourceStateSet {
+public:
+	void add(RHIResourceState state) { bit_fields |= (1LL << (uint32_t)state); }
+	template <typename... TResourceState>
+	void add(RHIResourceState s, TResourceState... states) {
+		add(s);
+		add(states...);
+	}
+	bool contains(RHIResourceState state) const {
+		return (bit_fields & (1LL << (uint32_t)state)) != 0;
+	}
+	RHIResourceStateSet() :
+			bit_fields(0) {
+	}
+	RHIResourceStateSet(const RHIResourceStateSet &other) = default;
+	RHIResourceStateSet(RHIResourceState state) { add(state); }
+	template <typename... TResourceState>
+	RHIResourceStateSet(TResourceState... states) {
+		add(states...);
+	}
+
+	RHIResourceStateSet operator&(const RHIResourceStateSet &that) const {
+		RHIResourceStateSet result;
+		result.bit_fields = this->bit_fields & that.bit_fields;
+		return result;
+	}
+
+private:
+	uint64_t bit_fields = 0;
+	void add() {}
+};
+
 enum class RHICommandQueueType {
 	Graphics,
 	Compute,
