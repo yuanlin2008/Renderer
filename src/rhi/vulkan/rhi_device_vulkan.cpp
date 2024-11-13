@@ -19,15 +19,17 @@ struct RHICommandBuffer {
 };
 
 struct RHISwapChain {
-	RHICommandQueue *queue = nullptr;
-	RHIFormat format = RHIFormat::_Count;
-	uint32_t count = 0;
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 	VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+	std::vector<RHITexture> textures;
 };
 
 struct RHIFence {
 	VkSemaphore vk_semaphore = VK_NULL_HANDLE;
+};
+
+struct RHITexture {
+	VkImage vk_image = VK_NULL_HANDLE;
 };
 
 RHIDeviceVulkan::RHIDeviceVulkan(RHIContextVulkan *ctx, vkb::PhysicalDevice &physical_device) {
@@ -136,32 +138,30 @@ RHISwapChain *RHIDeviceVulkan::create_swapchain(SDL_Window *window, RHICommandQu
 	int w, h;
 	SDL_GetWindowSize(window, &w, &h);
 
-	VkSwapchainCreateInfoKHR ci = {};
-	ci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	ci.surface = vk_surface;
-	ci.minImageCount = count;
-	ci.imageFormat = get_format(format);
-	ci.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-	ci.imageExtent.width = w;
-	ci.imageExtent.height = h;
-	ci.imageArrayLayers = 1;
-	ci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-	ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	ci.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	ci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	ci.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-	ci.clipped = VK_TRUE;
-	ci.oldSwapchain = VK_NULL_HANDLE;
+	vkb::SwapchainBuilder builder{ device, vk_surface };
+	auto ret = builder.set_desired_format(VkSurfaceFormatKHR{
+												  .format = get_format(format),
+												  .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR })
+					   .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+					   .set_desired_extent(w, h)
+					   .add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+					   .build();
+	if (!ret) {
+		throw std::runtime_error(
+				std::string("Failed to create swapchain. Error: ") +
+				ret.error().message());
+	}
 
-	VkSwapchainKHR vk_swapchain;
-	VK_CHECK(api.createSwapchainKHR(&ci, nullptr, &vk_swapchain));
-
+	auto swapchain = ret.value();
+	auto images = swapchain.get_images().value();
+	std::vector<RHITexture> textures;
+	for (auto i : images) {
+		textures.push_back({ .vk_image = i });
+	}
 	return new RHISwapChain{
-		.queue = queue,
-		.format = format,
-		.count = count,
 		.vk_surface = vk_surface,
-		.vk_swapchain = vk_swapchain,
+		.vk_swapchain = ret.value(),
+		.textures = std::move(textures)
 	};
 }
 

@@ -8,7 +8,7 @@ struct RHICommandQueue;
 struct RHICommandPool;
 struct RHICommandBuffer;
 struct RHIBuffer {};
-struct RHITexture {};
+struct RHITexture;
 struct RHISampler {};
 struct RHIVertexFormat {};
 struct RHISwapChain;
