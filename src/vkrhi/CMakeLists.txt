@@ -2,7 +2,8 @@ add_library(vkrhi STATIC
     include/vkrhi/common.h
     include/vkrhi/device.h
     include/vkrhi/queue.h
-    src/util.h src/util.cpp
+
+    src/common.cpp
     src/device.cpp
     src/queue.cpp
 )

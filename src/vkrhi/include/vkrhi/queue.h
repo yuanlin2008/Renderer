@@ -8,9 +8,10 @@ class Device;
 
 class Queue : public Object<VkQueue> {
 public:
-	Queue(Device &device, uint32_t family_index, uint32_t index);
+	Queue(Device &device, uint32_t family_index, VkQueueFamilyProperties properties, uint32_t index);
 
 	uint32_t get_family_index() const { return family_index; }
+	const VkQueueFamilyProperties &get_properties() const { return properties; }
 	uint32_t get_index() const { return index; }
 
 	VkResult submit(const std::vector<VkSubmitInfo> &submit_infos, VkFence fence) const;
@@ -19,6 +20,7 @@ public:
 
 private:
 	uint32_t family_index{ 0 };
+	VkQueueFamilyProperties properties{};
 	uint32_t index{ 0 };
 };
 

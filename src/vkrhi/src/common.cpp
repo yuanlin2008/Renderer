@@ -1,6 +1,8 @@
-#include "util.h"
+#include "vkrhi/common.h"
 
 #include <map>
+
+namespace vkrhi {
 
 #define VK_RESULT(R) { R, #R }
 static std::map<VkResult, std::string> result_map = {
@@ -59,3 +61,4 @@ std::string get_result_str(VkResult r) {
 	}
 	return "UNKNOWN_ERROR";
 }
+} // namespace vkrhi
